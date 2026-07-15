@@ -1,0 +1,49 @@
+name: Init / reset group repos
+
+# (Re)initialises the five group repos: preserves each group's current main
+# behind an immutable session tag, then force-rewinds main to the workshop
+# starting point (newest start/* tag by default).
+#
+# Requires the repo secret WORKSHOP_PAT: a GitHub PAT with write access to
+# the five AI-kata-non-dev-group repos.
+
+on:
+  workflow_dispatch:
+    inputs:
+      session_tag:
+        description: "Tag that preserves each group's current work (e.g. session-2026-07-15)"
+        required: true
+        type: string
+      start_tag:
+        description: "Start tag to reset to (default: newest start/*)"
+        required: false
+        type: string
+      dry_run:
+        description: "Dry run — print what would happen, change nothing"
+        type: boolean
+        default: false
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    env:
+      PAT: ${{ secrets.WORKSHOP_PAT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check secret
+        run: |
+          if [[ -z "$PAT" ]]; then
+            echo "::error::Missing WORKSHOP_PAT secret (PAT with write access to the group repos)"
+            exit 1
+          fi
+
+      - name: Wire group remotes
+        run: ./scripts/setup-remotes.sh --token "$PAT"
+
+      - name: Reset
+        run: |
+          args=( "${{ inputs.session_tag }}" -y )
+          if [[ -n "${{ inputs.start_tag }}" ]]; then args+=( --start "${{ inputs.start_tag }}" ); fi
+          if ${{ inputs.dry_run }}; then args+=( --dry-run ); fi
+          ./scripts/reset-workshop.sh "${args[@]}"

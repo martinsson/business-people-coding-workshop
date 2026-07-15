@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Business People Coding — atelier</title>
+<style>
+  :root{
+    --blue:#0b6bcb;
+    --blue-deep:#084e95;
+    --ink:#141618;
+    --muted:#5b6570;
+    --faint:#9aa4ae;
+    --bg:#fafafa;
+    --card:#ffffff;
+    --line:#e5e8ec;
+    --accent-bg:#eef4fb;
+    --shadow:0 10px 40px rgba(16,32,52,.10);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:var(--sans);background:var(--bg);color:var(--ink);
+    -webkit-font-smoothing:antialiased;line-height:1.6;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:56px 24px 80px;}
+  .kicker{
+    font-size:13px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--blue);font-weight:600;margin-bottom:18px;
+  }
+  h1{
+    font-family:var(--serif);font-size:clamp(30px,5vw,44px);font-weight:600;
+    letter-spacing:-.02em;line-height:1.08;margin-bottom:10px;
+  }
+  h1 .hl{color:var(--blue);font-style:italic;}
+  .sub{color:var(--muted);font-size:17px;max-width:38em;margin-bottom:44px;}
+  h2{
+    font-size:14px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--faint);font-weight:600;margin:44px 0 16px;
+  }
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;}
+  a.tile{
+    display:block;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:18px 20px;text-decoration:none;color:var(--ink);
+    box-shadow:var(--shadow);transition:transform .15s ease, border-color .15s ease;
+  }
+  a.tile:hover{transform:translateY(-2px);border-color:var(--blue);}
+  a.tile .t{font-weight:600;color:var(--blue-deep);margin-bottom:4px;}
+  a.tile .d{font-size:14px;color:var(--muted);}
+  code{
+    background:var(--accent-bg);color:var(--blue-deep);
+    padding:.1em .45em;border-radius:5px;font-size:.9em;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .note{font-size:14px;color:var(--muted);margin-top:14px;max-width:44em;}
+  footer{margin-top:64px;font-size:13px;color:var(--faint);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Business People Coding · Atelier</div>
+  <h1>Faire une petite appli avec une <span class="hl">IA</span>, sans coder</h1>
+  <p class="sub">Le hub de facilitation de l'atelier : supports de présentation,
+  matériel pour les participants, et outillage pour initialiser et publier les sessions.</p>
+
+  <h2>Supports</h2>
+  <div class="grid">
+    <a class="tile" href="slides/workshop-web.html">
+      <div class="t">Slides (deck web)</div>
+      <div class="d">La présentation de l'atelier — navigation clavier, captures zoomables.</div>
+    </a>
+    <a class="tile" href="slides/workshop.html">
+      <div class="t">Slides (export Marp)</div>
+      <div class="d">La version Marp d'origine, générée depuis <code>slides/workshop.md</code>.</div>
+    </a>
+    <a class="tile" href="https://unlockers.ai/business-people-coding/">
+      <div class="t">Portfolio des applis</div>
+      <div class="d">Toutes les applis réalisées pendant les sessions, sur unlockers.ai.</div>
+    </a>
+  </div>
+
+  <h2>Pour les participants</h2>
+  <div class="grid">
+    <a class="tile" href="assets/llm-demo.html">
+      <div class="t">Démo : appeler un LLM</div>
+      <div class="d">Un vrai LLM depuis une page statique, sans clé API (<code>assets/llm.js</code>).</div>
+    </a>
+    <a class="tile" href="https://github.com/martinsson/business-people-coding-workshop/blob/main/docs/LLM-FOR-APPS.md">
+      <div class="t">Guide LLM pour les applis</div>
+      <div class="d">Comment brancher un LLM dans votre appli d'atelier, pas à pas.</div>
+    </a>
+  </div>
+
+  <h2>Facilitation</h2>
+  <div class="grid">
+    <a class="tile" href="https://github.com/martinsson/business-people-coding-workshop/blob/main/docs/WORKSHOP-FACILITATION.md">
+      <div class="t">Guide de facilitation</div>
+      <div class="d">Dérouler une session : repos de groupe, tags, publication, reset.</div>
+    </a>
+    <a class="tile" href="https://github.com/martinsson/business-people-coding-workshop/actions">
+      <div class="t">Actions : publier / réinitialiser</div>
+      <div class="d">« Publish session » et « Init / reset group repos », déclenchables à la main.</div>
+    </a>
+    <a class="tile" href="https://github.com/martinsson/business-people-coding-workshop">
+      <div class="t">Le dépôt</div>
+      <div class="d">Scripts, docs et workflows — la source de cette page.</div>
+    </a>
+  </div>
+  <p class="note">Les cinq espaces de travail des groupes :
+    <a href="https://github.com/martinsson/AI-kata-non-dev-group1">group1</a> ·
+    <a href="https://github.com/martinsson/AI-kata-non-dev-group2">group2</a> ·
+    <a href="https://github.com/martinsson/AI-kata-non-dev-group3">group3</a> ·
+    <a href="https://github.com/martinsson/AI-kata-non-dev-group4">group4</a> ·
+    <a href="https://github.com/martinsson/AI-kata-non-dev-group5">group5</a>
+  </p>
+
+  <footer>Johan Martinsson &amp; Jean Dupuis</footer>
+</div>
+</body>
+</html>

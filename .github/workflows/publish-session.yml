@@ -1,0 +1,62 @@
+name: Publish session
+
+# Closes out a workshop session from the cloud: snapshots each group's app,
+# screenshots it, adds portfolio cards, opens + merges a PR on unlockers-site
+# (deploy to unlockers.ai is automatic), then resets the group repos.
+#
+# Requires the repo secret WORKSHOP_PAT: a GitHub PAT with write access to
+# the five AI-kata-non-dev-group repos AND martinsson/unlockers-site.
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Session date YYYY-MM-DD (default: today)"
+        required: false
+        type: string
+      reset:
+        description: "Reset the group repos afterwards"
+        type: boolean
+        default: true
+      dry_run:
+        description: "Dry run — print what would happen, change nothing"
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      PAT: ${{ secrets.WORKSHOP_PAT }}
+      GH_TOKEN: ${{ secrets.WORKSHOP_PAT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check secret
+        run: |
+          if [[ -z "$PAT" ]]; then
+            echo "::error::Missing WORKSHOP_PAT secret (PAT with write access to the group repos + unlockers-site)"
+            exit 1
+          fi
+
+      - name: Git identity
+        run: |
+          git config --global user.name "publish-session (Actions)"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Wire group remotes
+        run: ./scripts/setup-remotes.sh --token "$PAT"
+
+      - name: Install Chromium for screenshots
+        run: npx --yes playwright@1.48.0 install --with-deps chromium
+
+      - name: Clone unlockers-site
+        run: git clone --quiet "https://x-access-token:${PAT}@github.com/martinsson/unlockers-site.git" "$RUNNER_TEMP/unlockers-site"
+
+      - name: Publish
+        run: |
+          args=( -y --site "$RUNNER_TEMP/unlockers-site" )
+          if [[ -n "${{ inputs.date }}" ]]; then args+=( "${{ inputs.date }}" ); fi
+          if ! ${{ inputs.reset }}; then args+=( --no-reset ); fi
+          if ${{ inputs.dry_run }}; then args+=( --dry-run ); fi
+          ./scripts/publish-session.sh "${args[@]}"

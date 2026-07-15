@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Faire une petite appli avec une IA, sans coder</title>
+<style>
+  :root{
+    --blue:#0b6bcb;
+    --blue-deep:#084e95;
+    --ink:#141618;
+    --muted:#5b6570;
+    --faint:#9aa4ae;
+    --bg:#fafafa;
+    --card:#ffffff;
+    --line:#e5e8ec;
+    --accent-bg:#eef4fb;
+    --shadow:0 10px 40px rgba(16,32,52,.10);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    background:#0e1116;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+
+  /* ---------- deck / slide framing ---------- */
+  .deck{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .stage{
+    position:relative;
+    width:min(100vw, calc(100vh * 16 / 9));
+    height:min(100vh, calc(100vw * 9 / 16));
+    background:var(--bg);
+    overflow:hidden;
+    box-shadow:0 30px 90px rgba(0,0,0,.45);
+  }
+  .slide{
+    position:absolute; inset:0;
+    padding:6.2% 7.4%;
+    display:flex; flex-direction:column; justify-content:center;
+    opacity:0; visibility:hidden;
+    transform:translateY(14px);
+    transition:opacity .5s ease, transform .5s ease, visibility .5s;
+    background:var(--bg);
+  }
+  .slide.active{opacity:1; visibility:visible; transform:none;}
+
+  /* fluid type scale — everything sizes off the stage width */
+  .stage{ font-size: clamp(11px, 1.55vw, 30px); }
+
+  h1{
+    color:var(--blue);
+    font-size:2.15em;
+    line-height:1.08;
+    letter-spacing:-.015em;
+    font-weight:700;
+    margin-bottom:.7em;
+  }
+  h1 .thin{font-weight:400;color:var(--ink);}
+  strong{color:var(--blue);font-weight:600;}
+
+  ul{list-style:none;}
+  li{
+    position:relative;
+    font-size:1.28em;
+    line-height:1.6;
+    padding-left:1.5em;
+    margin:.42em 0;
+    color:var(--ink);
+  }
+  li::before{
+    content:"";
+    position:absolute; left:0; top:.62em;
+    width:.55em; height:.55em; border-radius:2px;
+    background:var(--blue);
+    transform:rotate(45deg);
+  }
+  li .dim{color:var(--muted);}
+
+  .eyebrow{
+    font-size:.8em; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--faint); font-weight:600; margin-bottom:1.4em;
+  }
+  .note{
+    margin-top:1.5em; font-size:1.05em; color:var(--muted); line-height:1.5;
+  }
+  .note strong{color:var(--blue-deep);}
+  .em{font-style:italic;color:var(--muted);}
+
+  /* ---------- lead ---------- */
+  .slide.lead{align-items:center;text-align:center;justify-content:center;}
+  .slide.lead .kicker{
+    font-size:.82em;letter-spacing:.26em;text-transform:uppercase;
+    color:var(--blue);font-weight:600;margin-bottom:1.6em;
+  }
+  .slide.lead h1{
+    font-family:var(--serif);
+    font-size:3.1em; color:var(--ink); font-weight:600;
+    letter-spacing:-.02em; line-height:1.05; max-width:16em;
+    margin-bottom:.9em;
+  }
+  .slide.lead h1 .hl{color:var(--blue);font-style:italic;}
+  .slide.lead .authors{
+    font-size:1.15em; color:var(--muted); letter-spacing:.01em;
+  }
+  .slide.lead .rule{
+    width:3.4em;height:3px;border-radius:2px;background:var(--blue);
+    margin:0 auto 1.8em;
+  }
+
+  /* ---------- agenda numbered ---------- */
+  .agenda{display:flex;flex-direction:column;gap:.15em;}
+  .agenda .row{
+    display:flex;align-items:baseline;gap:.9em;
+    padding:.5em 0;border-bottom:1px solid var(--line);
+  }
+  .agenda .row:last-child{border-bottom:none;}
+  .agenda .n{
+    font-family:var(--serif);font-size:1.4em;color:var(--blue);
+    font-weight:600;min-width:1.4em;
+  }
+  .agenda .t{font-size:1.32em;font-weight:600;}
+  .agenda .d{font-size:1.32em;color:var(--muted);}
+
+  /* ---------- quote ---------- */
+  .slide.quote{align-items:center;text-align:center;justify-content:center;}
+  .slide.quote .mark{
+    font-family:var(--serif);font-size:5em;color:var(--blue);
+    line-height:.4;opacity:.25;margin-bottom:.2em;
+  }
+  .slide.quote blockquote{
+    font-family:var(--serif);font-style:italic;font-weight:500;
+    font-size:2.5em;line-height:1.25;color:var(--ink);
+    max-width:16em;letter-spacing:-.01em;
+  }
+  .slide.quote .after{
+    margin-top:1.3em;font-size:1.1em;color:var(--muted);max-width:26em;
+  }
+  .slide.quote .after strong{color:var(--blue-deep);}
+
+  /* ---------- method steps ---------- */
+  .steps{display:flex;flex-direction:column;gap:.55em;margin-top:.3em;}
+  .steps .step{
+    display:flex;align-items:center;gap:1em;
+    background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:.75em 1.1em;box-shadow:var(--shadow);
+  }
+  .steps .badge{
+    flex:none;width:1.9em;height:1.9em;border-radius:9px;
+    background:var(--blue);color:#fff;font-weight:700;font-size:1.15em;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .steps .step p{font-size:1.24em;line-height:1.35;}
+  .steps .step p b{color:var(--blue-deep);}
+  .method-foot{margin-top:1.4em;text-align:center;font-style:italic;
+    color:var(--muted);font-size:1.15em;}
+
+  /* ---------- procedure ---------- */
+  .slide.procedure{padding:4.5% 6%;justify-content:flex-start;}
+  .slide.procedure h1{font-size:1.5em;margin-bottom:.55em;}
+  .proc-lead{font-size:1.06em;color:var(--ink);margin-bottom:.9em;line-height:1.4;}
+  .proc-lead code, .proc code{
+    background:var(--accent-bg);color:var(--blue-deep);
+    padding:.08em .4em;border-radius:5px;font-size:.92em;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:600;
+  }
+  .proc-lead a{color:var(--blue);font-weight:600;text-decoration:none;border-bottom:1.5px solid rgba(11,107,203,.35);}
+  .proc-lead u{text-decoration:none;font-weight:800;}
+  .cards{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    grid-template-rows:minmax(0,1.55fr) minmax(0,1fr);
+    gap:.7em 1.1em;
+    flex:1;min-height:0;
+  }
+  .cards figure{display:flex;flex-direction:column;min-height:0;}
+  .cards figure.wide{grid-column:1 / -1;}
+  .cards figcaption{
+    font-size:.86em;line-height:1.3;color:var(--muted);
+    margin-bottom:.55em;min-height:3.4em;display:flex;gap:.4em;
+  }
+  .cards figure.wide figcaption{min-height:0;}
+  .cards figcaption .cn{
+    color:var(--blue);font-weight:800;font-family:var(--serif);
+  }
+  .cards figcaption b{color:var(--blue-deep);}
+  .cards img{
+    width:100%;flex:1;min-height:0;object-fit:contain;object-position:top center;
+    border:1px solid var(--line);border-radius:10px;background:#12151a;
+    box-shadow:var(--shadow);padding:4px;
+    cursor:zoom-in;
+  }
+  .proc-hint{
+    margin-top:.6em;text-align:center;font-size:.82em;color:var(--faint);
+    font-style:italic;
+  }
+
+  /* ---------- lightbox (click a screenshot to enlarge) ---------- */
+  .lightbox{
+    position:absolute;inset:0;z-index:10;
+    display:none;flex-direction:column;align-items:center;justify-content:center;
+    gap:1em;padding:2.5% 3%;
+    background:rgba(10,13,17,.94);
+    cursor:zoom-out;
+  }
+  .lightbox.open{display:flex;}
+  .lightbox img{
+    max-width:100%;max-height:86%;min-height:0;
+    border-radius:10px;background:#fff;
+    box-shadow:0 20px 70px rgba(0,0,0,.6);
+  }
+  .lightbox .lb-cap{
+    color:#cfd6de;font-size:1.05em;text-align:center;max-width:34em;line-height:1.4;
+  }
+  .lightbox .lb-cap .cn{color:#6db2f2;font-weight:800;font-family:var(--serif);margin-right:.5em;}
+
+  /* ---------- chrome: progress, counter, footer ---------- */
+  .progress{
+    position:absolute;left:0;top:0;height:4px;background:var(--blue);
+    transition:width .5s ease;z-index:5;
+  }
+  .counter{
+    position:absolute;right:2.4%;bottom:3%;
+    font-size:.85em;color:var(--faint);font-variant-numeric:tabular-nums;
+    letter-spacing:.05em;z-index:5;
+  }
+  .counter b{color:var(--blue);font-weight:700;}
+  .brand{
+    position:absolute;left:2.6%;bottom:3%;
+    font-size:.78em;color:var(--faint);letter-spacing:.02em;z-index:5;
+  }
+  .slide.lead ~ .counter{display:none;}
+
+  .hint{
+    position:fixed;left:50%;bottom:14px;transform:translateX(-50%);
+    color:#8a94a0;font-size:12px;letter-spacing:.04em;font-family:var(--sans);
+    background:rgba(20,24,30,.6);padding:6px 14px;border-radius:20px;
+    backdrop-filter:blur(6px);transition:opacity .6s;z-index:20;
+  }
+  .hint.gone{opacity:0;pointer-events:none;}
+  kbd{
+    font-family:var(--sans);background:#2a2f38;color:#cfd6de;
+    border-radius:5px;padding:1px 6px;font-size:11px;border:1px solid #3a4150;
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+  <div class="stage" id="stage">
+    <div class="progress" id="progress"></div>
+
+    <!-- 1 · lead -->
+    <section class="slide lead active">
+      <div class="kicker">Atelier · Change IT</div>
+      <div class="rule"></div>
+      <h1>Faire une petite appli avec une <span class="hl">IA</span>, sans coder</h1>
+      <div class="authors">Johan Martinsson &nbsp;·&nbsp; Jean Dupuis</div>
+    </section>
+
+    <!-- 2 · agenda -->
+    <section class="slide">
+      <div class="eyebrow">Au programme</div>
+      <div class="agenda">
+        <div class="row"><span class="n">01</span><span class="t">Intro</span><span class="d">— ce qu'on va faire et pourquoi</span></div>
+        <div class="row"><span class="n">02</span><span class="t">Méthode</span><span class="d">— comment travailler avec l'IA</span></div>
+        <div class="row"><span class="n">03</span><span class="t">Hands-on</span><span class="d">— vous codez (avec l'IA)</span></div>
+        <div class="row"><span class="n">04</span><span class="t">Démo &amp; échanges</span></div>
+      </div>
+    </section>
+
+    <!-- 3 · what we build -->
+    <section class="slide">
+      <h1>On va développer <span class="thin">une petite appli</span></h1>
+      <ul>
+        <li>Open data, visualisation</li>
+        <li>Chatbot</li>
+        <li>Dépôt de demande</li>
+        <li><span class="dim">Votre rêve…</span></li>
+      </ul>
+    </section>
+
+    <!-- 4 · pratique -->
+    <section class="slide">
+      <h1>Pratique</h1>
+      <ul>
+        <li>Appli sur <strong>GitHub</strong></li>
+        <li>Claude sur le web <span class="dim">(compte de prêt)</span></li>
+        <li><strong>Open source</strong></li>
+      </ul>
+      <p class="note"><strong>Pour faire pareil chez vous :</strong><br>
+      créez un compte GitHub + un compte Claude / Copilot / OpenAI</p>
+    </section>
+
+    <!-- 5 · why -->
+    <section class="slide">
+      <h1>Pourquoi faire faire une appli <span class="thin">aux non-devs&nbsp;?</span></h1>
+      <ul>
+        <li>Prototyper pour mieux définir</li>
+        <li>Se familiariser avec un workflow <strong>IA-first</strong></li>
+        <li>Découvrir</li>
+        <li>Ne plus être bloqué par la difficulté de coder</li>
+      </ul>
+    </section>
+
+    <!-- 6 · quote -->
+    <section class="slide quote">
+      <div class="mark">“</div>
+      <blockquote>Ce sera pas dans les règles de l'art.</blockquote>
+      <p class="after">Pas grave — si le fonctionnel est prometteur,
+      on refait le code <strong>proprement</strong>.</p>
+    </section>
+
+    <!-- 7 · method -->
+    <section class="slide">
+      <h1>Comment travailler avec l'IA</h1>
+      <div class="steps">
+        <div class="step"><span class="badge">1</span><p><b>Décrire</b> ce qu'on veut construire</p></div>
+        <div class="step"><span class="badge">2</span><p><b>Itérer</b> avec l'IA — tester, ajuster, préciser</p></div>
+        <div class="step"><span class="badge">3</span><p><b>Valider</b> le résultat</p></div>
+      </div>
+      <p class="method-foot">L'IA génère, vous guidez.</p>
+    </section>
+
+    <!-- 8 · procedure -->
+    <section class="slide procedure">
+      <h1>La procédure, pas à pas</h1>
+      <p class="proc-lead"><strong>1.</strong> Allez sur
+        <a href="https://www.changit.fr/AI-kata-non-dev-group1/">www.changit.fr/AI-kata-non-dev-group<u>N</u></a>
+        (<u>N</u> = le numéro de votre groupe)</p>
+      <div class="cards">
+        <figure>
+          <figcaption><span class="cn">2</span><span>Allez sur <b>claude.ai/code</b> et saisissez votre email</span></figcaption>
+          <img src="images/step2-email.png" alt="Saisir l'email">
+        </figure>
+        <figure>
+          <figcaption><span class="cn">3</span><span>Récupérez le <b>code de vérification</b> reçu par email</span></figcaption>
+          <img src="images/step3-code.png" alt="Code de vérification">
+        </figure>
+        <figure>
+          <figcaption><span class="cn">4</span><span>Sélectionnez le <b>bon projet</b> (votre groupe)</span></figcaption>
+          <img src="images/step4-repo-zoom.png" alt="Sélectionner le projet">
+        </figure>
+        <figure class="wide">
+          <figcaption><span class="cn">5</span><span>Demandez une modification <b>comme celle-ci</b></span></figcaption>
+          <img src="images/step5-instructions.png" alt="Instruction dans le chat">
+        </figure>
+      </div>
+      <p class="proc-hint">Cliquez une capture pour l'agrandir</p>
+    </section>
+
+    <div class="lightbox" id="lightbox">
+      <img src="" alt="">
+      <p class="lb-cap" id="lb-cap"></p>
+    </div>
+
+    <div class="counter" id="counter"><b>01</b> / 08</div>
+    <div class="brand">Johan Martinsson &amp; Jean Dupuis</div>
+  </div>
+</div>
+
+<div class="hint" id="hint">Naviguez avec <kbd>←</kbd> <kbd>→</kbd> · <kbd>F</kbd> plein écran</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  const progress = document.getElementById('progress');
+  const counter  = document.getElementById('counter');
+  const hint     = document.getElementById('hint');
+  let i = 0;
+
+  const pad = n => String(n).padStart(2,'0');
+
+  function show(n){
+    closeLightbox();
+    i = Math.max(0, Math.min(total-1, n));
+    slides.forEach((s,k)=> s.classList.toggle('active', k===i));
+    progress.style.width = ((i)/(total-1)*100) + '%';
+    counter.innerHTML = '<b>'+pad(i+1)+'</b> / '+pad(total);
+    counter.style.display = i===0 ? 'none' : '';
+    location.hash = '#'+(i+1);
+  }
+  function next(){ show(i+1); }
+  function prev(){ show(i-1); }
+
+  // lightbox: click a procedure screenshot to enlarge it (readable full-stage)
+  const lightbox = document.getElementById('lightbox');
+  const lbImg = lightbox.querySelector('img');
+  const lbCap = document.getElementById('lb-cap');
+  document.querySelectorAll('.cards img').forEach(img=>{
+    img.addEventListener('click', e=>{
+      e.stopPropagation();
+      const cap = img.closest('figure').querySelector('figcaption');
+      lbImg.src = img.src; lbImg.alt = img.alt;
+      lbCap.innerHTML = cap.innerHTML;
+      lightbox.classList.add('open');
+    });
+  });
+  function closeLightbox(){ lightbox.classList.remove('open'); }
+  lightbox.addEventListener('click', e=>{ e.stopPropagation(); closeLightbox(); });
+
+  document.addEventListener('keydown', e=>{
+    if(lightbox.classList.contains('open')){
+      if(['Escape','ArrowRight','ArrowLeft','ArrowUp','ArrowDown',' ','Enter'].includes(e.key)){
+        e.preventDefault(); closeLightbox();
+      }
+      return;
+    }
+    if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){ e.preventDefault(); next(); hide(); }
+    else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){ e.preventDefault(); prev(); hide(); }
+    else if(e.key==='Home'){ show(0); hide(); }
+    else if(e.key==='End'){ show(total-1); hide(); }
+    else if(e.key==='f'||e.key==='F'){
+      if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  });
+
+  // click / tap to advance (right half = next, left half = prev)
+  document.getElementById('stage').addEventListener('click', e=>{
+    const r = e.currentTarget.getBoundingClientRect();
+    (e.clientX - r.left) < r.width*0.28 ? prev() : next();
+    hide();
+  });
+
+  let hidden=false;
+  function hide(){ if(!hidden){ hint.classList.add('gone'); hidden=true; } }
+  setTimeout(hide, 4200);
+
+  // deep-link support (initial + live hash changes)
+  function fromHash(){
+    const n = parseInt((location.hash||'').replace('#',''),10);
+    return Number.isFinite(n) && n>=1 ? n-1 : 0;
+  }
+  window.addEventListener('hashchange', ()=>{ if(fromHash()!==i) show(fromHash()); });
+  show(fromHash());
+</script>
+</body>
+</html>
