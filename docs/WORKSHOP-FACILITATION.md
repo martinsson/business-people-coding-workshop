@@ -79,20 +79,26 @@ branches for this — they don't move and won't be touched on the next reset.
 # Publishing a session
 
 `scripts/publish-session.sh [<date>]` closes out a session end to end. For each
-group remote it snapshots `site/` from their `main` into the portfolio subfolder
-under `<date>/<group>/`, captures a `preview.png`, and (if no section for that
-date exists yet) adds bilingual cards to the portfolio's `index.html`; it then
-commits on a `portfolio/session-<date>` branch, opens a PR on `unlockers-site`
-and merges it (deploy is automatic), then **chains into the reset** below.
+group remote it first checks the group made **real progress** vs the start point
+(`start/*`): unchanged groups are skipped, a borderline trivial/dummy change is
+asked about, and only groups with genuine work are published. It then snapshots
+`site/` from their `main` into the portfolio subfolder under `<date>/<group>/`,
+captures a `preview.png`, and (if no section for that date exists yet) adds
+bilingual cards to the portfolio's `index.html`; it then commits on a
+`portfolio/session-<date>` branch, opens a PR on `unlockers-site` and merges it
+(deploy is automatic), then **chains into the reset** below (which runs for
+*every* group, so skipped groups still start clean next session).
 
 ```bash
 ./scripts/publish-session.sh --dry-run        # preview (default date = today)
 ./scripts/publish-session.sh 2026-06-18        # publish that session, then reset
 ```
 
-Useful flags: `--no-reset` (publish only), `--no-shots` (skip screenshots),
-`--no-push` (commit on the branch, skip push/PR/merge), `--site <dir>` (the
-`unlockers-site` checkout), `-y`.
+Useful flags: `--all` (publish every group, skip the progress gate),
+`--min-lines N` (progress threshold, default 20), `--start <tag>` (baseline to
+compare/reset against), `--no-reset` (publish only), `--no-shots` (skip
+screenshots), `--no-push` (commit on the branch, skip push/PR/merge),
+`--site <dir>` (the `unlockers-site` checkout), `-y`.
 If you hand-curate the cards for a date, re-running is safe: the script detects an
 existing section and leaves your cards untouched.
 
