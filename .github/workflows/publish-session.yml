@@ -5,7 +5,7 @@ name: Publish session
 # (deploy to unlockers.ai is automatic), then resets the group repos.
 #
 # Requires the repo secret WORKSHOP_PAT: a GitHub PAT with write access to
-# the five AI-kata-non-dev-group repos AND martinsson/unlockers-site.
+# the five AI-kata-non-dev-group repos AND unlockers-ai/unlockers-site.
 
 on:
   workflow_dispatch:
@@ -51,7 +51,7 @@ jobs:
         run: npx --yes playwright@1.48.0 install --with-deps chromium
 
       - name: Clone unlockers-site
-        run: git clone --quiet "https://x-access-token:${PAT}@github.com/martinsson/unlockers-site.git" "$RUNNER_TEMP/unlockers-site"
+        run: git clone --quiet "https://x-access-token:${PAT}@github.com/unlockers-ai/unlockers-site.git" "$RUNNER_TEMP/unlockers-site"
 
       - name: Publish
         run: |

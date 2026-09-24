@@ -2,7 +2,7 @@
 #
 # publish-session.sh — close out a workshop session.
 #
-# The portfolio lives on unlockers.ai (repo martinsson/unlockers-site, subfolder
+# The portfolio lives on unlockers.ai (repo unlockers-ai/unlockers-site, subfolder
 # public/business-people-coding/), which deploys from main via GitHub Actions.
 # That repo's convention is changes-via-PR, so this script delivers as a
 # branch → PR → immediate merge (gh CLI), not a direct push to main.
@@ -27,7 +27,7 @@
 #
 # Options:
 #   --site <dir>        unlockers-site repo checkout
-#                       (default: ~/Documents/Claude/Projects/unlockers landing and funnel)
+#                       (default: ~/clients/unlockers/unlockers-site)
 #   --remotes "a b c"   group remotes (default: group1 group2 group3 group4 group5)
 #   --all               publish every group with a site/, even trivial/no-progress ones
 #   --min-lines <N>     changed-line threshold for "real progress" (default: 20)
@@ -46,7 +46,7 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 SCRIPT_DIR="$REPO_ROOT/scripts"
 
 SESSION_DATE=""
-SITE_REPO="$HOME/Documents/Claude/Projects/unlockers landing and funnel"
+SITE_REPO="$HOME/clients/unlockers/unlockers-site"
 SUBDIR="public/business-people-coding"
 REMOTES="group1 group2 group3 group4 group5"
 DO_SHOTS=1; DO_RESET=1; DO_PUSH=1; DRY_RUN=0; ASSUME_YES=0

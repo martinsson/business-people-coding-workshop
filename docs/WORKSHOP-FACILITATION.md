@@ -32,8 +32,8 @@ here is just where to start.
 ```
 
 The portfolio lives at <https://unlockers.ai/business-people-coding/> — the
-`public/business-people-coding/` subfolder of the `martinsson/unlockers-site`
-repo (checkout: `~/Documents/Claude/Projects/unlockers landing and funnel`).
+`public/business-people-coding/` subfolder of the `unlockers-ai/unlockers-site`
+repo (checkout: `~/clients/unlockers/unlockers-site`).
 The publish script delivers there via branch → PR → merge; merging `main`
 auto-deploys. The old changit.fr portfolio (`martinsson/business-people-coding`)
 is frozen and no longer published to. Giving participants an easy way

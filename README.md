@@ -32,7 +32,7 @@ Both operations are `workflow_dispatch` — trigger them from the **Actions** ta
   session tag, then force-rewinds `main` to the newest `start/*` tag.
 
 One-time setup: add a repo secret **`WORKSHOP_PAT`** — a GitHub PAT with
-write access to the five group repos and `martinsson/unlockers-site`.
+write access to the five group repos and `unlockers-ai/unlockers-site`.
 
 ## Running locally
 
